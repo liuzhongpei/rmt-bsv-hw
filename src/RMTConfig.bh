@@ -1,0 +1,113 @@
+// ============================================================
+// RMTConfig.bh - RMT BSV 硬件流水线全局配置宏
+//
+// Reconfigurable Match Tables (RMT) Hardware Pipeline
+// Target: 100G Ethernet Line Rate (~150 Mpps @64B packets)
+//
+// Bluespec SystemVerilog Configuration Header
+// ============================================================
+
+`ifndef RMT_CONFIG_BH
+`define RMT_CONFIG_BH
+
+// ============================================================
+// PHV (Packet Header Vector) Parameters
+// 与软件实现 rmt.h 中的定义保持一致
+// ============================================================
+`define PHV_MAX_FIELDS     160    // PHV 字段槽位总数
+`define PHV_FIELD_WIDTH    128    // 每字段位宽（bits，匹配 SW fv_t）
+`define PHV_MAX_HDRS       64     // 最大头实例数（hvalid 位图宽度）
+`define PHV_FIELD_IDX_BITS 8      // ceil(log2(160)) = 8
+
+// ============================================================
+// Parser Parameters
+// ============================================================
+`define PARSER_MAX_STATES  32     // 解析图状态数
+`define PARSER_MAX_OPS      4     // 每状态最大解析操作数
+`define PARSER_MAX_CASES   16     // 每状态最大 select 分支数
+`define PARSER_STATE_BITS   5     // ceil(log2(32))
+`define PARSER_OP_BITS        2   // ceil(log2(4))
+
+// ============================================================
+// Match-Action Pipeline Parameters
+// ============================================================
+`define PIPE_MAX_STAGES     8     // 最大物理流水线级数
+`define PIPE_MIN_STAGES     4     // 默认/最小级数
+`define PIPE_STAGE_BITS     3     // ceil(log2(8))
+`define PIPE_MAX_TABLES    16     // 匹配表总数
+`define PIPE_TABLE_BITS     4     // ceil(log2(16))
+`define PIPE_MAX_KEYS       8     // 每表最大 key 字段数（覆盖 5 元组）
+`define PIPE_MAX_ACTIONS   32     // 动作程序总数
+`define PIPE_ACTION_BITS    5     // ceil(log2(32))
+
+// ============================================================
+// ALU / VLIW Parameters
+// ============================================================
+`define ALU_NUM_PER_STAGE  8      // 每级 ALU 数（VLIW 宽度）★ 仿真缩小：16→8
+`define ALU_MAX_WORDS       8     // 每动作最大 VLIW word 数
+`define ALU_WORD_BITS       3     // ceil(log2(8))
+`define ALU_OPCODE_BITS     6     // 操作码宽度（支持全部 29 种操作）
+`define ALU_MAX_PARAMS      8     // 每表项的动作数据字数
+`define ALU_PARAM_BITS      3     // ceil(log2(8))
+`define ALU_SLOT_BITS       3     // ceil(log2(8)) ★ 仿真缩小：随 ALU_NUM_PER_STAGE
+
+// ============================================================
+// Match Engine Parameters
+// ============================================================
+`define MATCH_TCAM_DEPTH  1024    // 每表 TCAM 条目数
+`define MATCH_TCAM_WIDTH   128    // TCAM key 宽度（128-bit 字段）
+`define MATCH_SRAM_DEPTH  1024    // 动作数据 SRAM 深度
+`define MATCH_MAX_MASK     256    // 命中向量宽度（多 TCAM 级联）
+`define MATCH_MASK_BITS     8     // ceil(log2(256))
+`define MATCH_TCAM_ADDR    10     // ceil(log2(1024))
+
+// ============================================================
+// TCP Reassembly Parameters (新增)
+// ============================================================
+`define TCP_MAX_SESSIONS  256     // 最大并发 TCP 会话数
+`define TCP_SESSION_BITS    8     // ceil(log2(256))
+`define TCP_REORDER_DEPTH  64     // 每会话重排缓冲深度（报文数）
+`define TCP_REORDER_BITS    6     // ceil(log2(64))
+`define TCP_SEQ_BITS       32     // TCP 序列号位宽
+`define TCP_TOTAL_SLOTS  16384    // 256 sessions × 64 slots = 16384
+
+// ============================================================
+// Packet Buffer Parameters
+// ============================================================
+`define PKT_BUF_DEPTH      512    // 报文缓冲条目数
+`define PKT_BUF_DATA_BITS  256    // 每条目 32 字节（256-bit 总线）
+`define PKT_BUF_ADDR_BITS   9     // ceil(log2(512))
+`define PKT_MAX_BYTES     2048    // 最大报文长度
+`define PKT_LEN_BITS        12    // ceil(log2(2048))
+`define PKT_BUF_BEATS       64    // 2048 / 32 = 64 beats per packet
+
+// ============================================================
+// Network Interface Parameters
+// ============================================================
+`define ETH_DATA_WIDTH     256    // 以太网数据总线（bits）
+`define ETH_DATA_BYTES      32    // 每周期字节数
+`define ETH_CLK_MHZ       156.25 // 时钟频率 (MHz)
+`define ETH_HDR_BYTES       16    // 内联解析的最大头部字节数
+`define ETH_PORT_BITS       10    // 端口号位宽
+
+// ============================================================
+// Control Plane Parameters
+// ============================================================
+`define AXI_ADDR_WIDTH      32
+`define AXI_DATA_WIDTH      64
+`define CP_FIFO_DEPTH       16    // 控制面命令 FIFO 深度
+`define CP_FIFO_BITS         4    // ceil(log2(16))
+
+// ============================================================
+// Pipeline Credit Parameters
+// ============================================================
+`define CREDIT_MAX          16    // 每级最大信用数
+`define CREDIT_BITS          5    // ceil(log2(16)) + 1
+
+// ============================================================
+// Debug and Trace Parameters
+// ============================================================
+`define TRACE_DEPTH         256   // 跟踪缓冲深度
+`define TRACE_BITS            8   // ceil(log2(256))
+
+`endif // RMT_CONFIG_BH
